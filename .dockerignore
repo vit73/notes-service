@@ -1,7 +1,12 @@
-**/node_modules
-**/vendor
+.git
+.idea
+backend/bootstrap/cache/*.php
+backend/vendor/
+frontend/node_modules/
 **/.env
-**/.git
+**/.env.*
+!**/.env.example
 **/dist
 **/coverage
 **/.phpunit.cache
+
