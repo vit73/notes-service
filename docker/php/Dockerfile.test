@@ -1,0 +1,41 @@
+FROM php:8.4-cli-alpine
+
+RUN apk add --no-cache \
+        git \
+        unzip \
+        libpq \
+        sqlite-libs \
+        oniguruma \
+    && apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        postgresql-dev \
+        sqlite-dev \
+        oniguruma-dev \
+    && docker-php-ext-install -j"$(nproc)" \
+        pdo_pgsql \
+        pdo_sqlite \
+        mbstring \
+    && apk del .build-deps
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY backend/composer.json backend/composer.lock ./
+
+RUN composer install \
+    --no-interaction \
+    --prefer-dist \
+    --no-scripts \
+    --no-autoloader \
+    --no-progress
+
+COPY backend/ ./
+RUN cp .env.example .env \
+    && rm -f bootstrap/cache/packages.php \
+             bootstrap/cache/services.php \
+             bootstrap/cache/config.php \
+    && composer dump-autoload --optimize --no-scripts \
+    && php artisan package:discover --ansi
+
+CMD ["php", "artisan", "test"]

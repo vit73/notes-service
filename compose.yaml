@@ -45,5 +45,22 @@ services:
       - app
     restart: unless-stopped
 
+  tests:
+    profiles:
+      - test
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.test
+    environment:
+      APP_ENV: testing
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:?APP_KEY is required}
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+    command: [ "php", "artisan", "test" ]
+
 volumes:
   pgdata:
