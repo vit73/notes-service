@@ -1,0 +1,185 @@
+openapi: 3.0.3
+
+info:
+  title: Notes Service API
+  version: 1.0.0
+  description: REST API для управления заметками
+
+servers:
+  - url: /api/v1
+
+tags:
+  - name: Notes
+    description: Операции с заметками
+
+paths:
+  /notes:
+    get:
+      tags: [Notes]
+      summary: Получить список заметок
+      operationId: listNotes
+      responses:
+        '200':
+          description: Список заметок
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Note'
+
+    post:
+      tags: [Notes]
+      summary: Создать заметку
+      operationId: createNote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteInput'
+      responses:
+        '201':
+          description: Заметка создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /notes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID заметки
+        schema:
+          type: integer
+          minimum: 1
+
+    get:
+      tags: [Notes]
+      summary: Получить заметку по ID
+      operationId: getNote
+      responses:
+        '200':
+          description: Заметка найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Notes]
+      summary: Обновить заметку
+      description: Полное обновление заголовка и содержимого
+      operationId: updateNote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteInput'
+      responses:
+        '200':
+          description: Заметка обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Notes]
+      summary: Удалить заметку
+      operationId: deleteNote
+      responses:
+        '204':
+          description: Заметка удалена
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Note:
+      type: object
+      required: [id, title, content, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          maxLength: 255
+          example: Купить продукты
+        content:
+          type: string
+          example: Молоко, хлеб, яблоки
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    NoteInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          example: Новая заметка
+        content:
+          type: string
+          example: Текст заметки
+
+    NoteResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Note'
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    NotFound:
+      description: Заметка не найдена
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ValidationError:
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
