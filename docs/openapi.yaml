@@ -78,7 +78,7 @@ paths:
 
     put:
       tags: [Notes]
-      summary: Обновить заметку
+      summary: Редактировать заметку
       description: Полное обновление заголовка и содержимого
       operationId: updateNote
       requestBody:
